@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstdlib>
 
+#include <vector>
+
 #include <cmath>
 
 #include <glm/glm.hpp>
@@ -16,6 +18,20 @@ void loadTexture(GLuint texname, const char *filename);
 
 GLFWwindow *window;
 
+const char *vert = GLSL(
+    attribute vec3 pos;
+
+    void main(){
+        gl_Position = vec4(pos,0);
+    }
+);
+
+const char *frag = GLSL(
+    void main(){
+        gl_FragColor = vec4(1,1,1,1);
+    }
+);
+
 
 void setup() {
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -24,13 +40,45 @@ void setup() {
 
     // TODO
     // init shaders and other global state
+    vector<vec3> a;
+    a.push_back(vec3(-.5,0,0));
+    a.push_back(vec3(.5,0,0));
+    a.push_back(vec3( 0,0,.5));
+    
+    //GLuint vao;
+    //glGenVertexArrays(1, &vao);
+    //glBindVertexArray(vao);
+    cout << glGetString(GL_VERSION) << endl;
+    cout << "fdsafdsa" << endl;
+
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, a.size()*sizeof(vec3), a.data(), GL_STATIC_DRAW);
+
+
+    GLuint shader = compileShader(vert,frag); 
+
+    glUseProgram(shader);
+
+    GLuint posLocation = glGetAttribLocation(shader,"pos");
+    checkError();
+
+    glEnableVertexAttribArray(posLocation);
+    cout << posLocation << endl;
+    checkError();
+    glVertexAttribPointer(posLocation, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
+    checkError();
+    
+    
 }
 
 void draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // TODO
     // draw things
+    glDrawArrays(GL_TRIANGLES,0,3);
+    checkError();
 }
 
 static void glfw_resize_callback(GLFWwindow *window, int width, int height) {
